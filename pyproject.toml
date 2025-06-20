@@ -12,3 +12,20 @@ dev = [
     "ruff>=0.9.7,<0.13",
     "pre-commit<5"
 ]
+
+[tool.ruff]
+line-length = 100
+fix = true
+
+[tool.ruff.lint]
+select = ["F","E","W","B","I","Q","UP"]
+
+[tool.ruff.format]
+docstring-code-format = true
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+version = "0.1.0"
+tag_format = "v$version"
+update_changelog_on_bump = true
+version_files = ["pyproject.toml:version"]
