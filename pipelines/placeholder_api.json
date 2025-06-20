@@ -1,6 +1,11 @@
-{
-    "type": "api",
-    "sources": [],
-    "sinks": [],
-    "schedule": "0 * * * *"
-}
+[   
+    {
+        "name" : "placeholder API",
+        "type": "api",
+        "schedule": "0 * * * *",
+        "connection": {
+            "host": "localhost",
+            "port": 8080
+        }
+    }
+]

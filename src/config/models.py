@@ -3,46 +3,44 @@ from __future__ import annotations
 import json
 import os
 import re
+from pathlib import Path
 
 
 class Pipeline:
-    def __init__(
-        self, name: str, config: dict, type: str, sources: list, sinks: list, schedule: str
-    ):
+    def __init__(self, name: str, sources: list[Source]):
         self.name = name
-        self.config = config
-        self.type = type
         self.sources = sources
-        self.sinks = sinks
-        self.schedule = schedule
 
     @classmethod
-    def from_json(cls, path: str) -> Pipeline:
+    def from_json(cls, path: Path) -> Pipeline:
         try:
-            with open(path) as f:
-                data = json.load(f)
-        except json.JSONDecodeError:
             with open(path, encoding="utf-8") as f:
                 data = json.load(f)
+        except json.JSONDecodeError:
+            raise ValueError("Invalid JSON encoding")
 
-        # Validate JSON data
-        if not all(key in data for key in ("type", "sources", "sinks", "schedule")):
-            raise ValueError("Invalid JSON data, lacking required keys")
+        # Convert to list if single source to allow iteration
+        if not isinstance(data, list):
+            data = [data]
 
-        if data["type"] not in ("batch", "stream"):
-            raise ValueError("Invalid JSON data, type must be 'batch' or 'stream'")
+        # Build sources
+        sources = [Source(**source) for source in data]
+        return cls(os.path.basename(path), sources)
 
-        if data["sources"] not in ("api", "olap"):
-            raise ValueError("Invalid JSON data, type must be 'api' or 'olap'")
 
-        if not re.match(r"^\d+ \* \* \* \*$", data["schedule"]):
-            raise ValueError("Invalid JSON data, schedule must be in cron format")
+class Source:
+    def __init__(self, name: str, type: str, schedule: str, connection: dict):
+        # Validate required fields
+        if not all(isinstance(x, str) for x in (name, type, schedule)):
+            raise ValueError("name, type, and schedule must be strings")
 
-        return cls(
-            os.path.basename(path),
-            data,
-            data["type"],
-            data["sources"],
-            data["sinks"],
-            data["schedule"],
-        )
+        if type not in ("api", "db"):
+            raise ValueError("type must be 'api' or 'db'")
+
+        if not re.match(r"^\d+ \* \* \* \*$", schedule):
+            raise ValueError("schedule must be in cron format (e.g., '0 * * * *')")
+
+        self.name = name
+        self.type = type
+        self.schedule = schedule
+        self.connection = connection
