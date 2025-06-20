@@ -1,0 +1,7 @@
+[project]
+name = "metadata-ingestion"
+version = "0.1.0"
+description = "Metadata ingestion package with factory pattern to ingest data to delta lake from diverse sources."
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
