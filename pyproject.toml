@@ -5,3 +5,10 @@ description = "Metadata ingestion package with factory pattern to ingest data to
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = []
+
+[dependency-groups]
+dev = [
+    "commitizen>=4.2.2,<5",
+    "ruff>=0.9.7,<0.13",
+    "pre-commit<5"
+]
