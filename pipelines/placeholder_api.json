@@ -1,0 +1,6 @@
+{
+    "type": "api",
+    "sources": [],
+    "sinks": [],
+    "schedule": "0 * * * *"
+}
