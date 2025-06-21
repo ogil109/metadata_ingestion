@@ -1,0 +1,10 @@
+[   
+    {
+        "name" : "placeholder API",
+        "type": "api",
+        "schedule": "0 * * * *",
+        "connection": {
+            "odbc_connection_string": "DSN=my_odbc_dsn;UID=my_user;PWD=my_password"
+        }
+    }
+]
