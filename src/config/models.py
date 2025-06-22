@@ -30,10 +30,10 @@ class Pipeline:
 
 class Source:
     def __init__(self, name: str, src_type: str, connection: dict, schedule: str | None = None):
-        # Validate required fields
-        if src_type not in ("api", "odbc"):
-            raise ValueError("src_type must be 'api' or 'odbc'")
+        # Validate src_type by checking if a corresponding connector exists
+        self._validate_src_type(src_type)
 
+        # Validate schedule format if provided
         if schedule is not None and not re.match(r"^\d+ \* \* \* \*$", schedule):
             raise ValueError("schedule must be in cron format (e.g., '0 * * * *')")
 
@@ -41,3 +41,22 @@ class Source:
         self.src_type = src_type
         self.connection = connection
         self.schedule = schedule  # None means no scheduling, run once
+
+    def _validate_src_type(self, src_type: str) -> None:
+        """Validate that the src_type has a corresponding connector class.
+
+        Args:
+            src_type: The source type to validate
+
+        Raises:
+            ValueError: If the src_type is not supported
+        """
+        # Import here to avoid circular imports
+        from src.connectors.factory import ConnectorFactory
+
+        if not ConnectorFactory.is_supported_type(src_type):
+            supported_types = ConnectorFactory.get_supported_types()
+            raise ValueError(
+                f"Unsupported source type: '{src_type}'. "
+                f"Supported types are: {', '.join(supported_types)}"
+            )

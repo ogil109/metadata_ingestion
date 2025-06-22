@@ -1,4 +1,7 @@
+import importlib
+import inspect
 from collections.abc import Callable
+from pathlib import Path
 from typing import Any
 
 from dagster import DefaultScheduleStatus, Definitions, ScheduleDefinition, job, op
@@ -104,9 +107,46 @@ class Connector:
 class ConnectorFactory:
     """Gateway for instantiating the correct connector based on source type."""
 
-    @staticmethod
-    def create_connector(source: Source) -> Connector:
-        """Create and return the appropriate connector instance based on source type.
+    _connector_cache: dict[str, type[Connector]] = {}
+
+    @classmethod
+    def _discover_connectors(cls) -> dict[str, type[Connector]]:
+        """Dynamically discover all available connector classes.
+
+        Returns:
+            dict: Mapping of src_type to connector class (for validation purposes)
+        """
+        if cls._connector_cache:
+            return cls._connector_cache
+
+        # Scan all Python files in connectors dir and find Connector subclasses
+        connectors_dir = Path(__file__).parent
+        connector_classes = {}
+
+        for py_file in connectors_dir.glob("*.py"):
+            if py_file.name in ("__init__.py", "factory.py"):
+                continue
+
+            module_name = f"src.connectors.{py_file.stem}"
+
+            module = importlib.import_module(module_name)
+
+            for name, obj in inspect.getmembers(module, inspect.isclass):
+                if (
+                    obj != Connector
+                    and issubclass(obj, Connector)
+                    and obj.__module__ == module_name
+                ):
+                    # Use class name as the src_type
+                    src_type = name.lower()
+                    connector_classes[src_type] = obj
+
+        cls._connector_cache = connector_classes
+        return connector_classes
+
+    @classmethod
+    def create(cls, source: Source) -> Connector:
+        """Create and return the appropriate connector instance based on source type if supported.
 
         Args:
             source: Source instance containing connection details and type information
@@ -117,25 +157,42 @@ class ConnectorFactory:
         Raises:
             ValueError: If the src_type is not supported
         """
-        # Import here to avoid circular imports
-        from src.connectors.api_connector import ApiConnector
-        from src.connectors.odbc_connector import OdbcConnector
+        connectors = cls._discover_connectors()
 
-        # Route to the correct connector based on src_type
-        if source.src_type == "odbc":
-            return OdbcConnector(source)
-        elif source.src_type == "api":
-            return ApiConnector(source)
-        else:
+        if source.src_type not in connectors:
+            supported_types = list(connectors.keys())
             raise ValueError(
-                f"Unsupported source type: {source.src_type}. Supported types are: 'odbc', 'api'"
+                f"Unsupported source type: '{source.src_type}'. "
+                f"Supported types are: {', '.join(sorted(supported_types))}"
             )
 
-    @staticmethod
-    def get_supported_types() -> list[str]:
+        connector_class = connectors[source.src_type]
+        return connector_class(source)
+
+    @classmethod
+    def get_supported_types(cls) -> list[str]:
         """Get a list of supported connector types.
 
         Returns:
             list[str]: List of supported source types
         """
-        return ["odbc", "api"]
+        connectors = cls._discover_connectors()
+        return sorted(connectors.keys())
+
+    @classmethod
+    def is_supported_type(cls, src_type: str) -> bool:
+        """Check if a source type is supported.
+
+        Args:
+            src_type: The source type to check
+
+        Returns:
+            bool: True if the source type is supported, False otherwise
+        """
+        connectors = cls._discover_connectors()
+        return src_type in connectors
+
+    @classmethod
+    def clear_cache(cls) -> None:
+        """Clear the connector cache. Useful for testing or dynamic reloading."""
+        cls._connector_cache.clear()

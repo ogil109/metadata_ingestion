@@ -4,7 +4,7 @@ from src.config.models import Source
 from src.connectors.factory import Connector
 
 
-class ApiConnector(Connector):
+class Api(Connector):
     def __init__(self, source: Source) -> None:
         super().__init__(source)
         self.api_url = source.connection.get("api_url", "")
