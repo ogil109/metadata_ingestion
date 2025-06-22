@@ -1,10 +1,10 @@
 import pyodbc
 
 from src.config.models import Source
-from src.connectors.factory import BaseConnector
+from src.connectors.factory import Connector
 
 
-class OdbcConnector(BaseConnector):
+class OdbcConnector(Connector):
     def __init__(self, source: Source) -> None:
         super().__init__(source)
         self.connection_string = source.connection.get("odbc_connection_string", "")

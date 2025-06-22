@@ -6,7 +6,7 @@ from dagster import DefaultScheduleStatus, Definitions, ScheduleDefinition, job,
 from config.models import Source
 
 
-class BaseConnector:
+class Connector:
     def __init__(self, source: Source) -> None:
         self.source = source
         self._job_func: Callable[[], Any] | None = None
@@ -99,3 +99,43 @@ class BaseConnector:
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
         """Context manager exit - ensures cleanup."""
         self.stop_scheduling()
+
+
+class ConnectorFactory:
+    """Gateway for instantiating the correct connector based on source type."""
+
+    @staticmethod
+    def create_connector(source: Source) -> Connector:
+        """Create and return the appropriate connector instance based on source type.
+
+        Args:
+            source: Source instance containing connection details and type information
+
+        Returns:
+            Connector: Instance of the appropriate connector
+
+        Raises:
+            ValueError: If the src_type is not supported
+        """
+        # Import here to avoid circular imports
+        from src.connectors.api_connector import ApiConnector
+        from src.connectors.odbc_connector import OdbcConnector
+
+        # Route to the correct connector based on src_type
+        if source.src_type == "odbc":
+            return OdbcConnector(source)
+        elif source.src_type == "api":
+            return ApiConnector(source)
+        else:
+            raise ValueError(
+                f"Unsupported source type: {source.src_type}. Supported types are: 'odbc', 'api'"
+            )
+
+    @staticmethod
+    def get_supported_types() -> list[str]:
+        """Get a list of supported connector types.
+
+        Returns:
+            list[str]: List of supported source types
+        """
+        return ["odbc", "api"]
