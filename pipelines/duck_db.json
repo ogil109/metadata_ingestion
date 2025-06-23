@@ -1,0 +1,19 @@
+[
+    {
+        "name" : "duck_db_no_query",
+        "src_type": "odbc",
+        "connection": {
+            "odbc_connection_string": "DRIVER={DuckDB Driver};Database=/tmp/ingestion.duckdb;",
+            "table": "test_table"
+        }
+    },
+    {
+        "name" : "duck_db_query",
+        "src_type": "odbc",
+        "connection": {
+            "odbc_connection_string": "DRIVER={DuckDB Driver};Database=/tmp/ingestion.duckdb;",
+            "table": "test_table",
+            "query": "SELECT * FROM test_table WHERE id = 1"
+        }
+    }
+]

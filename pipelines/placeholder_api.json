@@ -1,11 +1,25 @@
-[   
+[
     {
-        "name" : "placeholder API",
-        "type": "api",
-        "schedule": "0 * * * *",
+        "name" : "placeholder_API_GET",
+        "src_type": "api",
         "connection": {
-            "host": "localhost",
-            "port": 8080
+            "endpoint": "https://jsonplaceholder.typicode.com/posts",
+            "type": "GET",
+            "args": {
+                "userId": 1
+            }
+        }
+    },
+    {
+        "name" : "placeholder_API_POST",
+        "src_type": "api",
+        "connection": {
+            "endpoint": "https://httpbin.org/post",
+            "type": "POST",
+            "body": {
+                "title": "test",
+                "body": "test works"
+            }
         }
     }
 ]
