@@ -3,7 +3,7 @@ from pathlib import Path
 from metadata_ingestion import logger
 from metadata_ingestion.config.models import Pipeline
 from metadata_ingestion.connectors.factory import ConnectorFactory
-from metadata_ingestion.dagster_manager import configure_dagster_manager, get_dagster_manager
+from metadata_ingestion.dagster_manager import get_dagster_manager
 
 
 def load_pipelines(directory: str) -> list[Pipeline]:
@@ -26,6 +26,7 @@ def create_connectors(pipelines: list[Pipeline]) -> list:
         try:
             logger.info(f"Creating connectors for pipeline: {pipeline.name}")
             for source in pipeline.sources:
+                # The factory creates the connector, which then auto-registers with the DagsterManager.
                 connector = ConnectorFactory.create(source)
                 connectors.append(connector)
                 logger.info(f"Created connector for source: {source.name}")
@@ -35,9 +36,8 @@ def create_connectors(pipelines: list[Pipeline]) -> list:
 
 
 def main() -> None:
-    """Main function to load pipelines, create connectors, and register with Dagster."""
-    # Initialize Dagster manager
-    configure_dagster_manager()
+    """Main function to load pipelines, create connectors, and trigger Dagster execution."""
+    dagster_manager = get_dagster_manager()
 
     # Load pipelines from the pipelines directory
     pipelines_directory = "pipelines"
@@ -47,17 +47,16 @@ def main() -> None:
         logger.error("No pipelines found. Exiting.")
         return
 
-    # Create connectors (this will automatically register Dagster definitions)
+    # Create connectors. This will now automatically register and execute Dagster jobs.
     connectors = create_connectors(pipelines)
 
     if not connectors:
-        logger.error("No connectors created. Exiting.")
+        logger.error("No connectors were created. Exiting.")
         return
 
-    logger.info(f"Successfully created {len(connectors)} connectors")
+    logger.info(f"Successfully created and registered {len(connectors)} connectors.")
 
     # Get run status from Dagster
-    dagster_manager = get_dagster_manager()
     run_status = dagster_manager.get_run_status()
 
     if run_status:

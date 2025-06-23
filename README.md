@@ -6,7 +6,7 @@ Metadata ingestion package with factory pattern to ingest data to delta lake fro
 
 ### Defining connectors
 
-Connectors are defined as subclasses of Connector (factory.py). They must be placed in the connectors folder for discoverability reasons.
+Connectors are defined as subclasses of BaseConnector. They must be placed in the connectors folder for discoverability reasons.
 
 ### Defining pipelines
 

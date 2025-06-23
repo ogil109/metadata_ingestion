@@ -1,10 +1,11 @@
 [
     {
-        "name" : "placeholder API",
-        "src_type": "api",
+        "name" : "duck_db",
+        "src_type": "odbc",
         "schedule": "0 * * * *",
         "connection": {
-            "odbc_connection_string": "DSN=my_odbc_dsn;UID=my_user;PWD=my_password"
+            "odbc_connection_string": "DSN=my_odbc_dsn;UID=my_user;PWD=my_password",
+            "query": "SELECT * FROM test_table"
         }
     }
 ]

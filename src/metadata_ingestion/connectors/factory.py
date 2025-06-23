@@ -15,7 +15,12 @@ class ConnectorFactory:
 
     @classmethod
     def _discover_connectors(cls) -> dict[str, type[BaseConnector]]:
-        """Dynamically discover all available connector classes."""
+        """Dynamically discover all available connector classes.
+
+        Returns:
+            Dictionary mapping lowercase connector names to class objects.
+            Example: {'odbc': <class Odbc>, 'api': <class Api>}
+        """
         if cls._connector_cache:
             return cls._connector_cache
 
@@ -40,10 +45,9 @@ class ConnectorFactory:
                         and issubclass(obj, BaseConnector)
                         and obj.__module__ == module_name
                     ):
-                        # Use class name as the src_type
-                        src_type = name.lower().replace("connector", "")
-                        connector_classes[src_type] = obj
-                        logger.debug(f"Discovered connector: {name} -> {src_type}")
+                        # Store with lowercase key for direct lookup
+                        connector_classes[name.lower()] = obj
+                        logger.debug(f"Discovered connector: {name} -> {name.lower()}")
 
             except Exception as e:
                 logger.warning(f"Failed to import module {module_name}: {e}")
@@ -63,22 +67,29 @@ class ConnectorFactory:
         Returns:
             Initialized BaseConnector
         """
-        # Check if the source type is supported
+        # Check cache first
+        cache_key = f"{source.src_type}:{source.name}"
+        if cache_key in cls._instance_cache:
+            return cls._instance_cache[cache_key]
+
+        # Discover available connectors
         connectors = cls._discover_connectors()
 
-        if source.src_type.lower() not in connectors:
+        # Direct lookup using lowercase key
+        src_type_key = source.src_type.lower()
+
+        if src_type_key not in connectors:
             supported_types = list(connectors.keys())
             raise ValueError(
                 f"Unsupported source type: '{source.src_type}'. "
                 f"Supported types are: {', '.join(sorted(supported_types))}"
             )
 
-        # Create connector
-        connector_class = connectors[source.src_type.lower()]
+        # Get the class object and instantiate it
+        connector_class = connectors[src_type_key]
         connector = connector_class(source)
 
-        # Cache the connector
-        cache_key = f"{source.src_type}:{source.name}"
+        # Cache the instance
         cls._instance_cache[cache_key] = connector
 
         return connector

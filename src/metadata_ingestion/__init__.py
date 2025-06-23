@@ -2,8 +2,6 @@ import logging
 import os
 from typing import Any
 
-from metadata_ingestion.dagster_manager import get_dagster_manager
-
 # Configure logging
 logging.basicConfig(
     level=os.getenv("LOG_LEVEL", "INFO"),
@@ -20,6 +18,8 @@ def initialize_dagster(config: dict[str, Any] | None = None) -> None:
         config: Configuration dictionary for the Dagster instance
                If None, uses a default "DAGSTER_TEMP_DIR" env var for configuration
     """
+    from metadata_ingestion.dagster_manager import get_dagster_manager
+
     get_dagster_manager(config)
     logger.info("Dagster manager initialized for local execution")
 
@@ -30,6 +30,8 @@ def cleanup_dagster() -> None:
     This should be called when shutting down the application to ensure
     proper cleanup of temporary directories and resources.
     """
+    from metadata_ingestion.dagster_manager import get_dagster_manager
+
     manager = get_dagster_manager()
     manager.cleanup()
     logger.info("Dagster resources cleaned up")
