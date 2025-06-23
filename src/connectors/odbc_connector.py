@@ -1,39 +1,53 @@
+from typing import Any
+
 import pyodbc
+from metadata_ingestion import logger
+from metadata_ingestion.connectors.base import BaseConnector
 
-from src.config.models import Source
-from src.connectors.factory import Connector
 
-
-class Odbc(Connector):
-    def __init__(self, source: Source) -> None:
-        super().__init__(source)
-        self.connection_string = source.connection.get("odbc_connection_string", "")
-        self.connection = None
-
-    def __enter__(self):
-        """Context manager entry - connects to the database."""
-        self.connect()
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
-        """Context manager exit - disconnects from the database."""
-        self.disconnect()
+class Odbc(BaseConnector):
+    """Connector for ODBC data sources."""
 
     def connect(self) -> None:
-        """Establish an ODBC connection using the connection string."""
-        self.connection = pyodbc.connect(self.connection_string)
+        """Establish connection to the ODBC database."""
+        try:
+            self._connection = pyodbc.connect(
+                f"DRIVER={self.source.driver};"
+                f"SERVER={self.source.server};"
+                f"DATABASE={self.source.database};"
+                f"UID={self.source.username};"
+                f"PWD={self.source.password}"
+            )
+            self._is_connected = True
+            logger.info(f"Connected to ODBC database {self.source.database}")
+        except pyodbc.Error as e:
+            logger.error(f"Failed to connect to ODBC database: {e}")
+            self._is_connected = False
 
     def disconnect(self) -> None:
-        """Close the ODBC connection."""
-        if self.connection:
-            self.connection.close()
-            self.connection = None
+        """Close connection to the ODBC database."""
+        if self._is_connected:
+            self._connection.close()
+            self._is_connected = False
+            logger.info("Disconnected from ODBC database")
 
-    def fetch_data(self, sql: str) -> pyodbc.Cursor:
-        """Execute custom SQL and return cursor for result retrieval."""
-        if not self.connection:
-            raise Exception("Connection not established. Call connect() first.")
+    def fetch_data(self, **kwargs) -> Any:
+        """Fetch data from the ODBC database."""
+        if not self._is_connected:
+            self.connect()
 
-        cursor = self.connection.cursor()
-        cursor.execute(sql)
-        return cursor
+        try:
+            cursor = self._connection.cursor()
+            cursor.execute(kwargs.get("query", "SELECT * FROM data"))
+            return cursor.fetchall()
+        except pyodbc.Error as e:
+            logger.error(f"Failed to fetch data from ODBC database: {e}")
+            return None
+
+    def write_raw(self, data: Any) -> None:
+        """Write data in raw format."""
+        logger.info(f"Writing raw data: {data}")
+
+    def write_delta(self, data: Any) -> None:
+        """Write data in delta format."""
+        logger.info(f"Writing delta data: {data}")

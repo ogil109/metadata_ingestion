@@ -34,8 +34,10 @@ class Source:
         self._validate_src_type(src_type)
 
         # Validate schedule format if provided
-        if schedule is not None and not re.match(r"^\d+ \* \* \* \*$", schedule):
-            raise ValueError("schedule must be in cron format (e.g., '0 * * * *')")
+        if schedule is not None and not re.match(
+            r"^[\d\*\-,/]+ [\d\*\-,/]+ [\d\*\-,/]+ [\d\*\-,/]+ [\d\*\-,/]+$", schedule
+        ):
+            raise ValueError("schedule must be in cron format (e.g., '0 8 * * *')")
 
         self.name = name
         self.src_type = src_type
@@ -52,7 +54,7 @@ class Source:
             ValueError: If the src_type is not supported
         """
         # Import here to avoid circular imports
-        from src.connectors.factory import ConnectorFactory
+        from metadata_ingestion.connectors.factory import ConnectorFactory
 
         if not ConnectorFactory.is_supported_type(src_type):
             supported_types = ConnectorFactory.get_supported_types()
