@@ -2,7 +2,6 @@
     {
         "name" : "placeholder_API_GET",
         "src_type": "api",
-        "schedule": "0 * * * *",
         "connection": {
             "endpoint": "https://jsonplaceholder.typicode.com/posts",
             "type": "GET",
@@ -14,7 +13,6 @@
     {
         "name" : "placeholder_API_POST",
         "src_type": "api",
-        "schedule": "0 * * * *",
         "connection": {
             "endpoint": "https://httpbin.org/post",
             "type": "POST",

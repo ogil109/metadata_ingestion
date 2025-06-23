@@ -1,4 +1,6 @@
-from metadata_ingestion.config.models import Source
+from pathlib import Path
+
+from metadata_ingestion.config.models import Pipeline
 from metadata_ingestion.connectors.api_connector import Api
 from metadata_ingestion.dagster_manager import get_dagster_manager
 
@@ -8,30 +10,15 @@ def test_api_connector_jobs():
     print("--- Testing API Connector Dagster Jobs ---")
     dagster_manager = get_dagster_manager()
 
+    # Load pipeline configuration and get the sources
+    pipeline = Pipeline.from_json(Path("pipelines/placeholder_api.json"))
+    source_get = pipeline.sources[0]
+    source_post = pipeline.sources[1]
+
     # Test GET request job
-    source_config_get = {
-        "name": "test_api_get_job",
-        "src_type": "api",
-        "connection": {
-            "endpoint": "https://jsonplaceholder.typicode.com/posts",
-            "type": "GET",
-            "args": {"userId": 1},
-        },
-    }
-    source_get = Source(**source_config_get)
     Api(source_get)  # This will trigger the Dagster job
 
     # Test POST request job
-    source_config_post = {
-        "name": "test_api_post_job",
-        "src_type": "api",
-        "connection": {
-            "endpoint": "https://jsonplaceholder.typicode.com/posts",
-            "type": "POST",
-            "body": {"title": "foo", "body": "bar", "userId": 1},
-        },
-    }
-    source_post = Source(**source_config_post)
     Api(source_post)  # This will trigger the Dagster job
 
     run_status = dagster_manager.get_run_status()
@@ -40,10 +27,10 @@ def test_api_connector_jobs():
     assert len(run_status) >= 2, f"Expected at least 2 runs, but found {len(run_status)}"
 
     get_job_run = next(
-        (run for run in run_status if run["job_name"] == "test_api_get_job_job"), None
+        (run for run in run_status if run["job_name"] == "placeholder_API_GET_job"), None
     )
     post_job_run = next(
-        (run for run in run_status if run["job_name"] == "test_api_post_job_job"), None
+        (run for run in run_status if run["job_name"] == "placeholder_API_POST_job"), None
     )
 
     assert get_job_run, "GET job run not found"

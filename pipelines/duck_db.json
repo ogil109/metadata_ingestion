@@ -1,11 +1,19 @@
 [
     {
-        "name" : "duck_db",
+        "name" : "duck_db_no_query",
         "src_type": "odbc",
-        "schedule": "0 * * * *",
         "connection": {
-            "odbc_connection_string": "DSN=my_odbc_dsn;UID=my_user;PWD=my_password",
-            "query": "SELECT * FROM test_table"
+            "odbc_connection_string": "DRIVER={DuckDB Driver};Database=/tmp/test.duckdb;",
+            "table": "test_table"
+        }
+    },
+    {
+        "name" : "duck_db_query",
+        "src_type": "odbc",
+        "connection": {
+            "odbc_connection_string": "DRIVER={DuckDB Driver};Database=/tmp/test.duckdb;",
+            "table": "test_table",
+            "query": "SELECT * FROM test_table WHERE id = 1"
         }
     }
 ]
