@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 import tempfile
 from typing import Any
@@ -26,10 +28,15 @@ class DagsterManager:
     def get_dagster_instance(self) -> DagsterInstance:
         """Get or create the underlying Dagster instance."""
         if self._dagster_instance is None:
-            self._temp_dir = self.config.get("temp_dir")
-            if not self._temp_dir:
-                self._temp_dir = tempfile.mkdtemp(prefix="dagster_")
-            self._dagster_instance = DagsterInstance.local_temp(self._temp_dir)
+            # Check if we're in test mode
+            if self.config.get("test_mode", False):
+                # Use ephemeral instance for tests to avoid SQLite file issues
+                self._dagster_instance = DagsterInstance.ephemeral()
+            else:
+                self._temp_dir = self.config.get("temp_dir")
+                if not self._temp_dir:
+                    self._temp_dir = tempfile.mkdtemp(prefix="dagster_")
+                self._dagster_instance = DagsterInstance.local_temp(self._temp_dir)
         return self._dagster_instance
 
     def add_connector(self, connector) -> None:
