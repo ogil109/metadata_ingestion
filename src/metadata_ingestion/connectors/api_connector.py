@@ -22,7 +22,7 @@ class Api(BaseConnector):
                 raise ValueError("API endpoint not specified in connection configuration")
 
             # Use the same request type as configured for the actual data fetch
-            request_type = self.source.connection.get("type").upper()
+            request_type = self.source.connection.get("type", "GET").upper()
 
             if request_type == "GET":
                 params = self.source.connection.get("args", {})
@@ -59,6 +59,10 @@ class Api(BaseConnector):
 
         try:
             endpoint = self.source.connection.get("endpoint")
+            if not endpoint:
+                raise ValueError("API endpoint not specified in connection configuration")
+
+            # Use the same request type as configured for the actual data fetch
             request_type = self.source.connection.get("type", "GET").upper()
 
             if request_type == "GET":

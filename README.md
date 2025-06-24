@@ -74,7 +74,7 @@ source = Source(
     name="my_api",
     connection={
         "endpoint": "https://api.example.com/data",
-        "type": "GET",  # or "POST"
+        "type": "GET",  # or "POST" (Default is GET)
         "args": {"param1": "value1"}  # Query params for GET
     }
 )
