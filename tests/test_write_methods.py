@@ -1,7 +1,6 @@
 """Integration tests for write_raw and write_delta methods."""
 
 import json
-from pathlib import Path
 
 import pytest  # noqa: F401
 
@@ -28,7 +27,7 @@ class TestWriteMethods:
             connector.write_raw(data)
 
             # Check raw output
-            raw_dir = Path("output") / "raw" / source.name
+            raw_dir = connector.output_base / "raw" / source.name
             assert raw_dir.exists(), "Raw output directory should exist"
 
             raw_files = list(raw_dir.glob("*.json"))
@@ -38,7 +37,7 @@ class TestWriteMethods:
             connector.write_delta(data)
 
             # Check delta output
-            delta_dir = Path("output") / "delta" / source.name
+            delta_dir = connector.output_base / "delta" / source.name
             assert delta_dir.exists(), "Delta output directory should exist"
 
             delta_log_dir = delta_dir / "_delta_log"
@@ -66,7 +65,7 @@ class TestWriteMethods:
             connector.write_raw(result)
 
             # Check raw output
-            raw_dir = Path("output") / "raw" / source.name
+            raw_dir = connector.output_base / "raw" / source.name
             assert raw_dir.exists(), "Raw output directory should exist"
 
             raw_files = list(raw_dir.glob("*.json"))
@@ -82,7 +81,7 @@ class TestWriteMethods:
             connector.write_delta(result)
 
             # Check delta output
-            delta_dir = Path("output") / "delta" / source.name
+            delta_dir = connector.output_base / "delta" / source.name
             assert delta_dir.exists(), "Delta output directory should exist"
 
             delta_log_dir = delta_dir / "_delta_log"
@@ -105,7 +104,7 @@ class TestWriteMethods:
         connector.write_delta(test_data)
 
         # Check directory structure
-        output_dir = Path("output")
+        output_dir = connector.output_base
         assert output_dir.exists(), "Output directory should exist"
 
         raw_dir = output_dir / "raw"
@@ -152,8 +151,8 @@ class TestWriteMethods:
             test_connector.write_delta(test_data)
 
             # Check that files were created
-            raw_dir = Path("output") / "raw" / test_source.name
-            delta_dir = Path("output") / "delta" / test_source.name
+            raw_dir = test_connector.output_base / "raw" / test_source.name
+            delta_dir = test_connector.output_base / "delta" / test_source.name
 
             assert raw_dir.exists(), f"Raw directory should exist for test case {i}"
             assert delta_dir.exists(), f"Delta directory should exist for test case {i}"

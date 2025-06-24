@@ -2,6 +2,19 @@
 
 Metadata ingestion package with factory pattern to ingest data to delta lake from diverse sources.
 
+## Quick Start with Docker
+
+```bash
+# Build the image
+docker build -t metadata-ingestion .
+
+# Run the application
+docker run --rm -v $(pwd)/output:/output metadata-ingestion
+
+# Run tests
+docker run --rm metadata-ingestion test
+```
+
 ## Features
 
 - **Multiple Connector Types**: Support for ODBC and API data sources

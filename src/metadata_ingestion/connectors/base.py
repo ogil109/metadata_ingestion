@@ -1,4 +1,6 @@
+import os
 from abc import ABC, abstractmethod
+from pathlib import Path
 from typing import Any
 
 from metadata_ingestion.config.models import Source
@@ -13,6 +15,15 @@ class BaseConnector(ABC):
 
         self.source = source
         self._is_connected = False
+
+        # Environment-aware output path for write methods
+        if os.getenv("CONTAINER_ENV"):
+            self.output_base = Path("/output")
+        else:
+            self.output_base = Path.cwd() / "output"
+
+        self.output_base.mkdir(parents=True, exist_ok=True)
+
         # Auto-register the connector instance with the Dagster manager.
         get_dagster_manager().add_connector(self)
 

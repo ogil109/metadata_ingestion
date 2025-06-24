@@ -49,12 +49,36 @@ def output_cleanup():
     # Clean up before test
     import shutil
 
-    output_dir = Path("output")
-    if output_dir.exists():
-        shutil.rmtree(output_dir)
+    # Determine the correct output directory based on environment
+    if os.getenv("CONTAINER_ENV"):
+        output_dir = Path("/output")
+        # In container, only clean contents, not the directory itself (it's a volume)
+        if output_dir.exists():
+            for item in output_dir.iterdir():
+                if item.is_dir():
+                    shutil.rmtree(item)
+                else:
+                    item.unlink()
+    else:
+        output_dir = Path("output")
+        # In local environment, we can remove the entire directory
+        if output_dir.exists():
+            shutil.rmtree(output_dir)
 
     yield
 
     # Clean up after test
-    if output_dir.exists():
-        shutil.rmtree(output_dir)
+    if os.getenv("CONTAINER_ENV"):
+        output_dir = Path("/output")
+        # In container, only clean contents, not the directory itself
+        if output_dir.exists():
+            for item in output_dir.iterdir():
+                if item.is_dir():
+                    shutil.rmtree(item)
+                else:
+                    item.unlink()
+    else:
+        output_dir = Path("output")
+        # In local environment, we can remove the entire directory
+        if output_dir.exists():
+            shutil.rmtree(output_dir)

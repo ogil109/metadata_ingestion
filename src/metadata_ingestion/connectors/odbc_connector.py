@@ -1,6 +1,5 @@
 import json
 from datetime import datetime
-from pathlib import Path
 from typing import Any
 
 import pyarrow as pa
@@ -86,7 +85,7 @@ class Odbc(BaseConnector):
             return
 
         # Create output directory structure
-        output_dir = Path("output") / "raw" / self.source.name
+        output_dir = self.output_base / "raw" / self.source.name
         output_dir.mkdir(parents=True, exist_ok=True)
 
         # Generate filename with timestamp
@@ -121,7 +120,7 @@ class Odbc(BaseConnector):
             return
 
         # Create output directory structure
-        output_dir = Path("output") / "delta" / self.source.name
+        output_dir = self.output_base / "delta" / self.source.name
         output_dir.mkdir(parents=True, exist_ok=True)
 
         # Convert pyodbc.Row objects to dictionaries

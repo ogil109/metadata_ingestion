@@ -1,7 +1,6 @@
 """Tests for ODBC connector functionality."""
 
 import json
-from pathlib import Path
 
 import pytest  # noqa: F401
 
@@ -99,7 +98,7 @@ class TestOdbcConnector:
         connector.write_raw((data, columns))
 
         # Check if file was created
-        output_dir = Path("output") / "raw" / source.name
+        output_dir = connector.output_base / "raw" / source.name
         assert output_dir.exists(), "Raw output directory should exist"
 
         json_files = list(output_dir.glob("*.json"))
@@ -140,7 +139,7 @@ class TestOdbcConnector:
         connector.write_delta((data, columns))
 
         # Check if delta directory was created
-        output_dir = Path("output") / "delta" / source.name
+        output_dir = connector.output_base / "delta" / source.name
         assert output_dir.exists(), "Delta output directory should exist"
 
         # Check for delta files (should contain _delta_log directory)
@@ -161,7 +160,7 @@ class TestOdbcConnector:
         connector.write_raw(test_data)
 
         # Check if file was created
-        output_dir = Path("output") / "raw" / source.name
+        output_dir = connector.output_base / "raw" / source.name
         assert output_dir.exists(), "Raw output directory should exist"
 
         json_files = list(output_dir.glob("*.json"))
@@ -191,7 +190,7 @@ class TestOdbcConnector:
         connector.write_delta(test_data)
 
         # Check if delta directory was created
-        output_dir = Path("output") / "delta" / source.name
+        output_dir = connector.output_base / "delta" / source.name
         assert output_dir.exists(), "Delta output directory should exist"
 
         # Check for delta files
