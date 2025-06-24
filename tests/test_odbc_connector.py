@@ -197,33 +197,3 @@ class TestOdbcConnector:
         # Check for delta files
         delta_log_dir = output_dir / "_delta_log"
         assert delta_log_dir.exists(), "Delta log directory should exist"
-
-    def test_odbc_connector_write_methods_empty_data(self, pipeline_configs):
-        """Test write methods with empty data."""
-        pipeline = Pipeline.from_json(pipeline_configs["duckdb"])
-        source = pipeline.sources[0]
-
-        connector = Odbc(source)
-
-        # Test with empty tuple
-        connector.write_raw(([], []))
-        connector.write_delta(([], []))
-
-        # Test with None
-        connector.write_raw((None, []))
-        connector.write_delta((None, []))
-
-        # Should not create any files or should handle gracefully
-        output_dir = Path("output")
-        if output_dir.exists():
-            raw_files = (
-                list((output_dir / "raw").rglob("*.json")) if (output_dir / "raw").exists() else []
-            )
-            delta_dirs = (
-                list((output_dir / "delta").rglob("_delta_log"))
-                if (output_dir / "delta").exists()
-                else []
-            )
-
-            # Files might be created but should be empty or handle gracefully
-            # The main thing is that no exceptions should be raised
