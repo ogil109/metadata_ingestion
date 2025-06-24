@@ -21,7 +21,9 @@ class Odbc(BaseConnector):
             if connection_string:
                 self._connection = pyodbc.connect(connection_string)
                 logger.info("Connected to ODBC database using connection string")
-            self._is_connected = True
+                self._is_connected = True
+            else:
+                self._is_connected = False
         except (pyodbc.Error, ValueError) as e:
             logger.error(f"Failed to connect to ODBC database: {e}")
             self._is_connected = False
@@ -44,6 +46,9 @@ class Odbc(BaseConnector):
             self.connect()
 
         try:
+            if not self._is_connected:
+                logger.error("No valid connection to ODBC database.")
+                return None, []
             cursor = self._connection.cursor()
 
             # Get query from connection object in JSON configuration
