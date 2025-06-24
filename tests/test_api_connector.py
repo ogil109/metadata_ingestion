@@ -1,7 +1,6 @@
 """Tests for API connector functionality."""
 
 import json
-from pathlib import Path
 
 import pytest  # noqa: F401
 
@@ -61,7 +60,7 @@ class TestApiConnector:
         connector.write_raw(test_data)
 
         # Check if file was created
-        output_dir = Path("output") / "raw" / source.name
+        output_dir = connector.output_base / "raw" / source.name
         assert output_dir.exists(), "Raw output directory should exist"
 
         json_files = list(output_dir.glob("*.json"))
@@ -89,7 +88,7 @@ class TestApiConnector:
         connector.write_delta(test_data)
 
         # Check if delta directory was created
-        output_dir = Path("output") / "delta" / source.name
+        output_dir = connector.output_base / "delta" / source.name
         assert output_dir.exists(), "Delta output directory should exist"
 
         # Check for delta files (should contain _delta_log directory)
@@ -110,7 +109,7 @@ class TestApiConnector:
         connector.write_delta(test_data)
 
         # Check if delta directory was created
-        output_dir = Path("output") / "delta" / source.name
+        output_dir = connector.output_base / "delta" / source.name
         assert output_dir.exists(), "Delta output directory should exist"
 
     def test_api_connector_write_methods_empty_data(self, pipeline_configs):
@@ -129,7 +128,7 @@ class TestApiConnector:
         connector.write_delta([])
 
         # Should not create any files
-        output_dir = Path("output")
+        output_dir = connector.output_base
         if output_dir.exists():
             raw_files = (
                 list((output_dir / "raw").rglob("*.json")) if (output_dir / "raw").exists() else []
